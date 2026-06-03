@@ -179,3 +179,5 @@
 .page-enter {
   animation: slide-up 0.3s ease-out;
 }
+
+/* Force CSS re-compilation with PostCSS and Tailwind */
