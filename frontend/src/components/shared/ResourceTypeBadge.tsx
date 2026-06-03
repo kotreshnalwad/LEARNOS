@@ -1,0 +1,1 @@
+export { ResourceTypeBadge } from './index'

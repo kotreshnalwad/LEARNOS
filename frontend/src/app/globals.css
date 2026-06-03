@@ -1,0 +1,181 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─── Design Tokens ─────────────────────────────────────────── */
+@layer base {
+  :root {
+    --background: 40 20% 97%;
+    --foreground: 0 0% 7%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 7%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 7%;
+    --primary: 0 0% 9%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 40 15% 94%;
+    --secondary-foreground: 0 0% 9%;
+    --muted: 40 12% 93%;
+    --muted-foreground: 0 0% 45%;
+    --accent: 37 50% 60%;
+    --accent-foreground: 0 0% 9%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 40 10% 88%;
+    --input: 40 10% 88%;
+    --ring: 37 50% 60%;
+    --radius: 0.75rem;
+
+    /* Sidebar */
+    --sidebar-width: 260px;
+    --nav-height: 60px;
+  }
+
+  .dark {
+    --background: 0 0% 7%;
+    --foreground: 40 15% 93%;
+    --card: 0 0% 10%;
+    --card-foreground: 40 15% 93%;
+    --popover: 0 0% 10%;
+    --popover-foreground: 40 15% 93%;
+    --primary: 40 15% 93%;
+    --primary-foreground: 0 0% 7%;
+    --secondary: 0 0% 14%;
+    --secondary-foreground: 40 15% 93%;
+    --muted: 0 0% 14%;
+    --muted-foreground: 0 0% 55%;
+    --accent: 37 50% 55%;
+    --accent-foreground: 0 0% 7%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 18%;
+    --input: 0 0% 18%;
+    --ring: 37 50% 55%;
+  }
+}
+
+/* ─── Base Styles ────────────────────────────────────────────── */
+@layer base {
+  * { @apply border-border; }
+
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+
+  h1, h2, h3 { @apply font-serif tracking-tight; }
+
+  ::selection {
+    background: hsl(37 50% 60% / 0.25);
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 4px; height: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { @apply bg-border rounded-full; }
+  ::-webkit-scrollbar-thumb:hover { @apply bg-muted-foreground; }
+}
+
+/* ─── Component Utilities ────────────────────────────────────── */
+@layer components {
+  /* Glassmorphism card */
+  .glass {
+    @apply bg-card/80 backdrop-blur-md border border-border/60;
+  }
+
+  /* Skeleton loader */
+  .skeleton {
+    @apply bg-muted animate-pulse rounded-md;
+    background-image: linear-gradient(
+      90deg,
+      hsl(var(--muted)) 25%,
+      hsl(var(--muted-foreground) / 0.08) 50%,
+      hsl(var(--muted)) 75%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 2s linear infinite;
+  }
+
+  /* Focus ring */
+  .focus-ring {
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2;
+  }
+
+  /* Gold gradient text */
+  .gold-text {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(135deg, #C8A96E 0%, #F5EDDC 60%, #C8A96E 100%);
+  }
+
+  /* Lesson status indicators */
+  .status-locked { @apply opacity-50 cursor-not-allowed; }
+  .status-in-progress { @apply border-gold/60 bg-gold-light/20; }
+  .status-completed { @apply border-success/40 bg-success/5; }
+
+  /* Resource type badges */
+  .badge-video { @apply bg-red-50 text-red-700 dark:bg-red-950 dark:text-red-300; }
+  .badge-course { @apply bg-gold-light text-gold-dark dark:bg-gold/20 dark:text-gold; }
+  .badge-docs { @apply bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300; }
+  .badge-paper { @apply bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-300; }
+  .badge-github { @apply bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300; }
+  .badge-blog { @apply bg-purple-50 text-purple-700 dark:bg-purple-950 dark:text-purple-300; }
+
+  /* SSE stream pulse */
+  .stream-active {
+    @apply relative;
+  }
+  .stream-active::after {
+    content: '';
+    @apply absolute right-2 top-2 w-2 h-2 rounded-full bg-gold animate-pulse;
+  }
+
+  /* Code blocks in markdown */
+  .prose-lesson pre {
+    @apply bg-secondary rounded-lg p-4 overflow-x-auto text-sm;
+  }
+  .prose-lesson code {
+    @apply bg-secondary px-1.5 py-0.5 rounded text-sm font-mono;
+  }
+  .prose-lesson h1, .prose-lesson h2, .prose-lesson h3 {
+    @apply font-serif text-foreground;
+  }
+  .prose-lesson a {
+    @apply text-gold underline underline-offset-2;
+  }
+}
+
+/* ─── Roadmap Tree ───────────────────────────────────────────── */
+.roadmap-connector {
+  position: relative;
+}
+.roadmap-connector::before {
+  content: '';
+  position: absolute;
+  left: 20px;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: hsl(var(--border));
+}
+
+/* ─── Tutor Chat ─────────────────────────────────────────────── */
+.tutor-message-stream::after {
+  content: '▋';
+  @apply text-gold animate-pulse ml-0.5;
+}
+
+/* ─── XP Bar Animation ───────────────────────────────────────── */
+.xp-bar-fill {
+  transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ─── Page Transitions ───────────────────────────────────────── */
+.page-enter {
+  animation: slide-up 0.3s ease-out;
+}

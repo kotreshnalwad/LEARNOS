@@ -1,0 +1,35 @@
+import { SignUp } from '@clerk/nextjs'
+
+export default function SignUpPage() {
+  return (
+    <div className="min-h-screen bg-background flex items-center justify-center p-6">
+      <div className="w-full max-w-md">
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center gap-2 mb-4">
+            <div className="w-8 h-8 rounded-lg bg-foreground flex items-center justify-center">
+              <svg className="w-4 h-4 text-background" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M5 3l14 9-14 9V3z"/>
+              </svg>
+            </div>
+            <span className="font-serif text-xl">LearnOS</span>
+          </div>
+          <h1 className="font-serif text-2xl text-foreground">Start learning</h1>
+          <p className="text-muted-foreground text-sm mt-1 font-light">
+            Create your account — AI builds your curriculum
+          </p>
+        </div>
+        <SignUp
+          appearance={{
+            elements: {
+              rootBox: 'w-full',
+              card: 'bg-card border border-border shadow-sm rounded-2xl',
+              headerTitle: 'font-serif',
+              formButtonPrimary: 'bg-foreground hover:opacity-85 rounded-xl',
+              footerActionLink: 'text-gold hover:text-gold-dark',
+            },
+          }}
+        />
+      </div>
+    </div>
+  )
+}
