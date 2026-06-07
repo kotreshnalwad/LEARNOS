@@ -12,7 +12,7 @@ class Settings(BaseSettings):
     DEBUG: bool = False
     ENVIRONMENT: str = "production"
     SECRET_KEY: str
-    ALLOWED_ORIGINS: List[str] = ["http://localhost:3000", "https://learnos.ai"]
+    ALLOWED_ORIGINS: List[str] = ["http://localhost:3000", "https://learnos-frontend.vercel.app"]
 
     # Database
     DATABASE_URL: str

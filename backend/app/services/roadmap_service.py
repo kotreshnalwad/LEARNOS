@@ -188,7 +188,7 @@ class RoadmapService:
                         completeness_score=res_data.get("completeness_score", 0),
                         community_score=res_data.get("community_score", 0),
                         composite_score=res_data.get("composite_score", 0),
-                        metadata=res_data.get("metadata", {}),
+                        resource_metadata=res_data.get("metadata", {}),
                     )
                     db.add(resource)
 

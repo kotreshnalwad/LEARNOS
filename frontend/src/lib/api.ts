@@ -1,7 +1,7 @@
 import axios, { AxiosInstance, AxiosError } from 'axios'
 import { useAuth } from '@clerk/nextjs'
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL || ''
 
 // Public client (no auth)
 export const apiClient: AxiosInstance = axios.create({

@@ -171,7 +171,7 @@ class RecommendationAgent:
                 completeness_score=replacement.completeness_score,
                 community_score=replacement.community_score,
                 composite_score=replacement.composite_score,
-                metadata=replacement.metadata,
+                resource_metadata=replacement.metadata,
             )
         )
 

@@ -4,7 +4,7 @@ Explains concepts, answers questions, generates examples, and creates
 on-demand quizzes based on lesson context.
 """
 from typing import List, Dict, Any, AsyncIterator
-import anthropic
+import google.generativeai as genai
 import structlog
 
 from app.core.config import get_settings
@@ -39,8 +39,11 @@ class TutorAgent:
     """Streaming AI tutor that maintains conversation context."""
 
     def __init__(self):
-        self.client = anthropic.AsyncAnthropic(api_key=settings.ANTHROPIC_API_KEY)
-        self.model = "claude-sonnet-4-20250514"
+        genai.configure(api_key=settings.GEMINI_API_KEY)
+        self.client = genai.GenerativeModel(
+            model_name='gemini-1.5-flash',
+            system_instruction=TUTOR_SYSTEM_PROMPT
+        )
 
     async def chat_stream(
         self,
@@ -50,15 +53,18 @@ class TutorAgent:
     ) -> AsyncIterator[str]:
         """Stream tutor response token by token."""
         messages = self._build_messages(message, lesson_context, conversation_history)
+        gemini_messages = []
+        for msg in messages:
+            role = "user" if msg["role"] == "user" else "model"
+            gemini_messages.append({"role": role, "parts": [msg["content"]]})
 
-        async with self.client.messages.stream(
-            model=self.model,
-            max_tokens=2000,
-            system=TUTOR_SYSTEM_PROMPT,
-            messages=messages,
-        ) as stream:
-            async for text in stream.text_stream:
-                yield text
+        response = await self.client.generate_content_async(
+            gemini_messages,
+            stream=True,
+            generation_config=genai.types.GenerationConfig(max_output_tokens=2000)
+        )
+        async for chunk in response:
+            yield chunk.text
 
     async def chat(
         self,
@@ -68,14 +74,16 @@ class TutorAgent:
     ) -> str:
         """Non-streaming tutor response."""
         messages = self._build_messages(message, lesson_context, conversation_history)
+        gemini_messages = []
+        for msg in messages:
+            role = "user" if msg["role"] == "user" else "model"
+            gemini_messages.append({"role": role, "parts": [msg["content"]]})
 
-        response = await self.client.messages.create(
-            model=self.model,
-            max_tokens=2000,
-            system=TUTOR_SYSTEM_PROMPT,
-            messages=messages,
+        response = await self.client.generate_content_async(
+            gemini_messages,
+            generation_config=genai.types.GenerationConfig(max_output_tokens=2000)
         )
-        return response.content[0].text
+        return response.text
 
     async def generate_explanation(self, concept: str, level: str, context: str = "") -> str:
         """Generate a detailed concept explanation."""
@@ -91,12 +99,11 @@ Provide:
 
 Use markdown formatting."""
 
-        response = await self.client.messages.create(
-            model=self.model,
-            max_tokens=1500,
-            messages=[{"role": "user", "content": prompt}],
+        response = await self.client.generate_content_async(
+            prompt,
+            generation_config=genai.types.GenerationConfig(max_output_tokens=1500)
         )
-        return response.content[0].text
+        return response.text
 
     async def generate_on_demand_quiz(
         self, topic: str, concepts: List[str], difficulty: str
@@ -120,13 +127,12 @@ Return JSON:
 }}
 Return ONLY JSON."""
 
-        response = await self.client.messages.create(
-            model=self.model,
-            max_tokens=1000,
-            messages=[{"role": "user", "content": prompt}],
+        response = await self.client.generate_content_async(
+            prompt,
+            generation_config=genai.types.GenerationConfig(max_output_tokens=1000)
         )
         import json
-        content = response.content[0].text.strip().replace("```json", "").replace("```", "").strip()
+        content = response.text.strip().replace("```json", "").replace("```", "").strip()
         return json.loads(content)
 
     async def get_suggestions(
@@ -139,13 +145,12 @@ Return as a JSON array of strings: ["question 1", "question 2", "question 3"]
 Return ONLY JSON."""
 
         try:
-            response = await self.client.messages.create(
-                model=self.model,
-                max_tokens=300,
-                messages=[{"role": "user", "content": prompt}],
+            response = await self.client.generate_content_async(
+                prompt,
+                generation_config=genai.types.GenerationConfig(max_output_tokens=300)
             )
             import json
-            content = response.content[0].text.strip().replace("```json", "").replace("```", "").strip()
+            content = response.text.strip().replace("```json", "").replace("```", "").strip()
             return json.loads(content)
         except Exception:
             return [

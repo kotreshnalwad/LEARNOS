@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { CheckCircle, XCircle, Clock, Zap, Trophy, RotateCcw, ArrowRight } from 'lucide-react'
 import { useSubmitQuiz } from '@/hooks/useApi'
-import type { Quiz, QuizResult } from '@/types'
+import type { Quiz, QuizResult as QuizResultType } from '@/types'
 
 interface QuizPanelProps {
   quiz: Quiz
@@ -19,7 +19,7 @@ export function QuizPanel({ quiz, lessonId }: QuizPanelProps) {
   const [currentIdx, setCurrentIdx] = useState(0)
   const [timeLeft, setTimeLeft] = useState(quiz.time_limit_minutes ? quiz.time_limit_minutes * 60 : null)
   const [timeStart, setTimeStart] = useState(0)
-  const [result, setResult] = useState<QuizResult | null>(null)
+  const [result, setResult] = useState<QuizResultType | null>(null)
   const { mutate: submitQuiz, isPending } = useSubmitQuiz()
 
   const questions = quiz.questions.sort((a, b) => a.order - b.order)
@@ -95,7 +95,7 @@ export function QuizPanel({ quiz, lessonId }: QuizPanelProps) {
   }
 
   if (state === 'submitted' && result) {
-    return <QuizResult result={result} quiz={quiz} onRetry={() => { setState('idle'); setResult(null) }} />
+    return <QuizResultView result={result} quiz={quiz} onRetry={() => { setState('idle'); setResult(null) }} />
   }
 
   return (
@@ -200,7 +200,7 @@ export function QuizPanel({ quiz, lessonId }: QuizPanelProps) {
   )
 }
 
-function QuizResult({ result, quiz, onRetry }: { result: QuizResult; quiz: Quiz; onRetry: () => void }) {
+function QuizResultView({ result, quiz, onRetry }: { result: QuizResultType; quiz: Quiz; onRetry: () => void }) {
   const passed = result.passed
   return (
     <motion.div

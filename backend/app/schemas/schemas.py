@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr, HttpUrl, Field, field_validator
+from pydantic import BaseModel, EmailStr, HttpUrl, Field, field_validator, model_validator
 from typing import Optional, List, Any, Dict
 from datetime import datetime
 from enum import Enum
@@ -202,12 +202,12 @@ class RoadmapCreateRequest(BaseModel):
     topic_query: Optional[str] = None
     level: SkillLevel = SkillLevel.BEGINNER
 
-    @field_validator("topic_query")
-    @classmethod
-    def validate_topic(cls, v: Optional[str], info: Any) -> Optional[str]:
-        if v is None and info.data.get("topic_id") is None:
+    @model_validator(mode="after")
+    def validate_topic(self) -> 'RoadmapCreateRequest':
+        if self.topic_id is None and self.topic_query is None:
             raise ValueError("Either topic_id or topic_query must be provided")
-        return v
+        return self
+
 
 
 class RoadmapSummary(BaseModel):

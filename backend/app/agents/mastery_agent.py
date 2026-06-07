@@ -4,7 +4,7 @@ Determines readiness to advance by checking: quiz scores, time spent, and
 project completion before unlocking the next module.
 """
 from typing import Dict, Any, List, Optional
-import anthropic
+import google.generativeai as genai
 import json
 import structlog
 
@@ -59,7 +59,8 @@ class MasteryAgent:
     """
 
     def __init__(self):
-        self.client = anthropic.AsyncAnthropic(api_key=settings.ANTHROPIC_API_KEY)
+        genai.configure(api_key=settings.GEMINI_API_KEY)
+        self.client = genai.GenerativeModel('gemini-1.5-flash')
 
     def evaluate_lesson_mastery(
         self,
@@ -169,12 +170,11 @@ Evaluate and return JSON:
 
 Be encouraging but honest. Pass if score >= 60. Return ONLY JSON."""
 
-        message = await self.client.messages.create(
-            model="claude-haiku-4-5-20251001",
-            max_tokens=800,
-            messages=[{"role": "user", "content": prompt}],
+        response = await self.client.generate_content_async(
+            prompt,
+            generation_config=genai.types.GenerationConfig(max_output_tokens=800)
         )
-        content = message.content[0].text.strip().replace("```json", "").replace("```", "").strip()
+        content = response.text.strip().replace("```json", "").replace("```", "").strip()
         try:
             return json.loads(content)
         except Exception:

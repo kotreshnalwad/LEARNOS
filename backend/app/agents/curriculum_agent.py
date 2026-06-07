@@ -6,7 +6,7 @@ based on ranked resources.
 from typing import List, Dict, Any, Optional, AsyncIterator
 import json
 import asyncio
-import anthropic
+import google.generativeai as genai
 import structlog
 
 from app.core.config import get_settings
@@ -19,13 +19,13 @@ settings = get_settings()
 
 class CurriculumAgent:
     """
-    Orchestrates Claude to design a complete curriculum from ranked resources.
+    Orchestrates Gemini to design a complete curriculum from ranked resources.
     Produces: modules → lessons → quizzes → projects → milestones.
     """
 
     def __init__(self):
-        self.client = anthropic.AsyncAnthropic(api_key=settings.ANTHROPIC_API_KEY)
-        self.model = "claude-sonnet-4-20250514"
+        genai.configure(api_key=settings.GEMINI_API_KEY)
+        self.client = genai.GenerativeModel('gemini-1.5-flash')
 
     async def generate_roadmap(
         self,
@@ -71,13 +71,12 @@ Return a JSON object with:
 }}
 Return ONLY the JSON object, no markdown, no explanation."""
 
-        message = await self.client.messages.create(
-            model=self.model,
-            max_tokens=1000,
-            messages=[{"role": "user", "content": prompt}],
+        response = await self.client.generate_content_async(
+            prompt,
+            generation_config=genai.types.GenerationConfig(max_output_tokens=1000)
         )
         try:
-            content = message.content[0].text.strip()
+            content = response.text.strip()
             content = content.replace("```json", "").replace("```", "").strip()
             return json.loads(content)
         except Exception as e:
@@ -159,13 +158,12 @@ RULES:
         if stream_callback:
             await stream_callback({"step": "curriculum", "progress": 30, "message": "Designing learning path..."})
 
-        message = await self.client.messages.create(
-            model=self.model,
-            max_tokens=8000,
-            messages=[{"role": "user", "content": prompt}],
+        response = await self.client.generate_content_async(
+            prompt,
+            generation_config=genai.types.GenerationConfig(max_output_tokens=8000)
         )
 
-        content = message.content[0].text.strip()
+        content = response.text.strip()
         content = content.replace("```json", "").replace("```", "").strip()
 
         try:
@@ -275,12 +273,11 @@ Return JSON:
 
 Generate exactly 5 questions. Vary difficulty. Return ONLY JSON."""
 
-        message = await self.client.messages.create(
-            model=self.model,
-            max_tokens=2000,
-            messages=[{"role": "user", "content": prompt}],
+        response = await self.client.generate_content_async(
+            prompt,
+            generation_config=genai.types.GenerationConfig(max_output_tokens=2000)
         )
-        content = message.content[0].text.strip().replace("```json", "").replace("```", "").strip()
+        content = response.text.strip().replace("```json", "").replace("```", "").strip()
         return json.loads(content)
 
     def _default_quiz(self, lesson_title: str) -> Dict[str, Any]:
@@ -332,12 +329,11 @@ Return JSON:
 
 Return ONLY JSON."""
 
-        message = await self.client.messages.create(
-            model=self.model,
-            max_tokens=800,
-            messages=[{"role": "user", "content": prompt}],
+        response = await self.client.generate_content_async(
+            prompt,
+            generation_config=genai.types.GenerationConfig(max_output_tokens=800)
         )
-        content = message.content[0].text.strip().replace("```json", "").replace("```", "").strip()
+        content = response.text.strip().replace("```json", "").replace("```", "").strip()
         return json.loads(content)
 
     def _fallback_curriculum(self, topic: str, level: SkillLevel) -> Dict[str, Any]:

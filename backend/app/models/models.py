@@ -180,7 +180,7 @@ class Resource(Base):
     composite_score: Mapped[float] = mapped_column(Float, default=0.0)
 
     thumbnail_url: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
-    metadata: Mapped[Optional[dict]] = mapped_column(JSON, nullable=True)
+    resource_metadata: Mapped[Optional[dict]] = mapped_column("metadata", JSON, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
     lesson: Mapped["Lesson"] = relationship("Lesson", back_populates="resources")
